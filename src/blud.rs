@@ -3,7 +3,7 @@ use std::sync::Arc;
 use tokio_rusqlite::Connection;
 
 #[derive(Debug)]
-struct Person {
+struct Save {
     id: i64,
     name: String,
     yob: i64,
@@ -60,7 +60,7 @@ pub async fn list_people(Extension(db): Extension<Db>) -> String {
             let mut stmt = conn.prepare("SELECT id, name, yob FROM person")?;
             let rows = stmt
                 .query_map([], |row| {
-                    Ok(Person {
+                    Ok(Save {
                         id: row.get(0)?,
                         name: row.get(1)?,
                         yob: row.get(2)?,

@@ -11,7 +11,7 @@ async fn main() ->Result<(), Box<dyn std::error::Error>>{
     println!("Hello, world!");
     
     let route = Router::new()
-    .route("/{capture}", get(default))
+    .route("/add/{*capture}", get(default))
     .route("/list",get(list_people))
     .layer(Extension(db));
 
