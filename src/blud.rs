@@ -1,13 +1,15 @@
-use axum::{extract::Path, Extension};
+use axum::{debug_handler, extract::Path,Json, Extension};
 use std::sync::Arc;
 use tokio_rusqlite::Connection;
+use serde::Serialize;
 
-#[derive(Debug)]
-struct Save {
-    id: i64,
-    name: String,
-    post: String,
-    yob: i64,
+#[derive(Debug,Serialize)]
+
+pub struct Save {
+    pub id: i64,
+    pub name: String,
+    pub post: String,
+    pub yob: i64,
 }
 
 pub type Db = Arc<Connection>;
@@ -22,6 +24,8 @@ pub async fn getnd(Path(param): Path<String>, Extension(_db): Extension<Db>,) ->
 
     ndpart.to_string()
 }
+
+
 
 pub async fn getfirst(Path(param): Path<String>, Extension(_db): Extension<Db>,) -> String {
 
@@ -47,10 +51,10 @@ pub async fn default(Path(param): Path<String>, Extension(db): Extension<Db>,) -
 
     // splitting at | then setting it as a iterator then unraping
 
+    // have to do ts because borrow checker
+
     let ndpart = getnd(Path(param.clone()), Extension(db.clone())).await.to_string();
     println!("2nd part {:?}", ndpart);
-
-
     
     let firstpart = getfirst(Path(param.clone()), Extension(db.clone())).await.to_string();
     println!("first part {:?} ", firstpart);
@@ -94,39 +98,25 @@ pub async fn db() -> Result<Db, Box<dyn std::error::Error>> {
     Ok(Arc::new(db))
 }
 
-pub async fn list_people(Extension(db): Extension<Db>) -> Vec<String> {
+#[debug_handler]
+pub async fn list_people(Extension(db): Extension<Db>) -> Json<Vec<Save>> {
     println!("listing people");
     let people = db
         .call(|conn| {
             let mut stmt = conn.prepare("SELECT id, name,post,yob FROM person")?;
             let rows = stmt
                 .query_map([], |row| {
-                    Ok(Save {
-                        id: row.get(0)?,
-                        name: row.get(1)?,
-                        post: row.get(2)?,
-                        yob: row.get(3)?,
-                    })
-                })?
-                .collect::<Result<Vec<_>, _>>()?;
+                    Ok(Save { id: row.get(0)?, name: row.get(1)?, post: row.get(2)?, yob: row.get(3)?,})
+             })?
+             .collect::<Result<Vec<_>, _>>()?;
+                    
             Ok(rows)
         })
-        .await;
+        .await
+        .unwrap_or_default();
 
-    match people {
-        Ok(people) => {
-            if people.is_empty() {
-                vec!["No people found.".to_string()]
-            } else {
-                people
-                    .into_iter()
-                    .map(|p| format!("{}: {} {}  ({})", p.id, p.name,p.post, p.yob))
-                    .collect::<Vec<_>>()
-            }
-        }
-        Err(e) => vec![format!("DB error: {}", e)],
-    }
-}
+    Json(people)
+   }
 
 
 pub async fn list_people2(Extension(db): Extension<Db>) -> String {
@@ -171,7 +161,7 @@ pub async fn find(Path(param): Path<String>,Extension(db): Extension<Db>) {
     let search = param.clone();
     let find_thing: Vec<_> = 
     result.iter()
-    .filter(|wtf|wtf.contains(&search))
+    .filter(|wtf|wtf.name.contains(&search))
     .collect();
 
     println!(" for your search\n {:?}\n", find_thing);
