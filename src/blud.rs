@@ -53,8 +53,41 @@ pub async fn db() -> Result<Db, Box<dyn std::error::Error>> {
     Ok(Arc::new(db))
 }
 
-pub async fn list_people(Extension(db): Extension<Db>) -> String {
+pub async fn list_people(Extension(db): Extension<Db>) -> Vec<String> {
     println!("listing people");
+    let people = db
+        .call(|conn| {
+            let mut stmt = conn.prepare("SELECT id, name, yob FROM person")?;
+            let rows = stmt
+                .query_map([], |row| {
+                    Ok(Save {
+                        id: row.get(0)?,
+                        name: row.get(1)?,
+                        yob: row.get(2)?,
+                    })
+                })?
+                .collect::<Result<Vec<_>, _>>()?;
+            Ok(rows)
+        })
+        .await;
+
+    match people {
+        Ok(people) => {
+            if people.is_empty() {
+                vec!["No people found.".to_string()]
+            } else {
+                people
+                    .into_iter()
+                    .map(|p| format!("{}: {} ({})", p.id, p.name, p.yob))
+                    .collect::<Vec<_>>()
+            }
+        }
+        Err(e) => vec![format!("DB error: {}", e)],
+    }
+}
+
+
+pub async fn list_people2(Extension(db): Extension<Db>) -> String {
     let people = db
         .call(|conn| {
             let mut stmt = conn.prepare("SELECT id, name, yob FROM person")?;
@@ -85,4 +118,20 @@ pub async fn list_people(Extension(db): Extension<Db>) -> String {
         }
         Err(e) => format!("DB error: {}", e),
     }
+}
+
+
+
+pub async fn find(Path(param): Path<String>,Extension(db): Extension<Db>) {
+    let result = list_people(Extension(db)).await;
+    // println!("Result: {:?}", result);
+    let search = param.clone();
+    let find_thing: Vec<_> = 
+    result.iter()
+    .filter(|wtf|wtf.contains(&search))
+    .collect();
+
+    println!(" for your search\n {:?}\n", find_thing);
+
+
 }
