@@ -6,43 +6,61 @@ use tokio_rusqlite::Connection;
 struct Save {
     id: i64,
     name: String,
+    post: String,
     yob: i64,
 }
 
 pub type Db = Arc<Connection>;
 
-pub async fn default(
-    Path(param): Path<String>,
-    // receives/cloning the arc
-    Extension(db): Extension<Db>,
-) -> String {
+
+pub async fn getnd(Path(param): Path<String>, Extension(_db): Extension<Db>,) -> String {
+    let string_to_split = param.clone();
+
+    // splitting at | then setting it as a iterator then unraping
+    let ndpart = string_to_split.split("|").nth(1).unwrap_or("");
+    println!("2nd part {:?}", ndpart);
+
+    ndpart.to_string()
+}
+
+pub async fn default(Path(param): Path<String>, Extension(db): Extension<Db>,) -> String {
     
+
+    // let string_to_split = param.clone();
+
+    // splitting at | then setting it as a iterator then unraping
+    let ndpart = getnd(Path(param.clone()), Extension(db.clone())).await.to_string();
+
+    println!("2nd part {:?}", ndpart);
+
     let name = param.clone();
+    let post = ndpart.clone();
     let yob = 2000;
-    println!("inserted {}", name);
+    println!("inserted {} {}", name, ndpart);
     let insert_result = db
         .call(move |conn| {
             Ok(conn.execute(
-                "INSERT INTO person (name, yob) VALUES (?1, ?2)",
-                (&name, &yob),
+                "INSERT INTO person (name, post,yob) VALUES (?1, ?2, ?3)",
+                (&name, &post, &yob),
             )?)
         })
         .await;
 
     match insert_result {
-        Ok(_) => format!("Inserted: {}", param),
+        Ok(_) => format!(": {} 2nd{} ", param, ndpart),
         Err(e) => format!("DB error: {}", e),
     }
 
 }
 
 pub async fn db() -> Result<Db, Box<dyn std::error::Error>> {
-    let db = Connection::open("my_db").await?;
+    let db = Connection::open("my_db3").await?;
     db.call(|conn| {
         Ok(conn.execute(
             "CREATE TABLE IF NOT EXISTS person (
                 id INTEGER PRIMARY KEY,
                 name TEXT NOT NULL,
+                post TEXT NOT NULL,
                 yob  INTEGER,
                 data  BLOB
             ) STRICT",
@@ -57,13 +75,14 @@ pub async fn list_people(Extension(db): Extension<Db>) -> Vec<String> {
     println!("listing people");
     let people = db
         .call(|conn| {
-            let mut stmt = conn.prepare("SELECT id, name, yob FROM person")?;
+            let mut stmt = conn.prepare("SELECT id, name,post,yob FROM person")?;
             let rows = stmt
                 .query_map([], |row| {
                     Ok(Save {
                         id: row.get(0)?,
                         name: row.get(1)?,
-                        yob: row.get(2)?,
+                        post: row.get(2)?,
+                        yob: row.get(3)?,
                     })
                 })?
                 .collect::<Result<Vec<_>, _>>()?;
@@ -78,7 +97,7 @@ pub async fn list_people(Extension(db): Extension<Db>) -> Vec<String> {
             } else {
                 people
                     .into_iter()
-                    .map(|p| format!("{}: {} ({})", p.id, p.name, p.yob))
+                    .map(|p| format!("{}: {} {}  ({})", p.id, p.name,p.post, p.yob))
                     .collect::<Vec<_>>()
             }
         }
@@ -90,13 +109,14 @@ pub async fn list_people(Extension(db): Extension<Db>) -> Vec<String> {
 pub async fn list_people2(Extension(db): Extension<Db>) -> String {
     let people = db
         .call(|conn| {
-            let mut stmt = conn.prepare("SELECT id, name, yob FROM person")?;
+            let mut stmt = conn.prepare("SELECT id, name,post, yob FROM person")?;
             let rows = stmt
                 .query_map([], |row| {
                     Ok(Save {
                         id: row.get(0)?,
                         name: row.get(1)?,
-                        yob: row.get(2)?,
+                        post: row.get(2)?,
+                        yob: row.get(3)?,
                     })
                 })?
                 .collect::<Result<Vec<_>, _>>()?;
@@ -111,7 +131,7 @@ pub async fn list_people2(Extension(db): Extension<Db>) -> String {
             } else {
                 people
                     .into_iter()
-                    .map(|p| format!("{}: {} ({})", p.id, p.name, p.yob))
+                    .map(|p| format!("{}: {} {} ({})", p.id, p.name,p.post, p.yob))
                     .collect::<Vec<_>>()
                     .join("\n")
             }
