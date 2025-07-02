@@ -23,17 +23,40 @@ pub async fn getnd(Path(param): Path<String>, Extension(_db): Extension<Db>,) ->
     ndpart.to_string()
 }
 
+pub async fn getfirst(Path(param): Path<String>, Extension(_db): Extension<Db>,) -> String {
+
+    let newparam = param.split_once('|');
+    if let Some((first, second)) = newparam{
+        println!("first {:?}", first.to_string());
+        println!("2nd {}", second);
+        first.to_string()
+    } else {
+        println!("no delimt");
+        "Nothing".to_string()
+    }
+
+
+}
+
+
+
 pub async fn default(Path(param): Path<String>, Extension(db): Extension<Db>,) -> String {
     
 
     // let string_to_split = param.clone();
 
     // splitting at | then setting it as a iterator then unraping
-    let ndpart = getnd(Path(param.clone()), Extension(db.clone())).await.to_string();
 
+    let ndpart = getnd(Path(param.clone()), Extension(db.clone())).await.to_string();
     println!("2nd part {:?}", ndpart);
 
-    let name = param.clone();
+
+    
+    let firstpart = getfirst(Path(param.clone()), Extension(db.clone())).await.to_string();
+    println!("first part {:?} ", firstpart);
+
+
+    let name = firstpart.clone();
     let post = ndpart.clone();
     let yob = 2000;
     println!("inserted {} {}", name, ndpart);
