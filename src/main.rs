@@ -15,7 +15,7 @@ async fn main() ->Result<(), Box<dyn std::error::Error>>{
     .route("/list",get(list_people2))
     .route("/blud", get(list_people))
     .route("/find/{*capture}", get(find))
-    .route("/search{*capture}", get(find_name))
+    .route("/search/{*capture}", get(find_name))
     .layer(Extension(db));
 
     let addr = "0.0.0.0:8080";
