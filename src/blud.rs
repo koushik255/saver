@@ -80,6 +80,7 @@ pub async fn default(Path(param): Path<String>, Extension(db): Extension<Db>,) -
 
 }
 
+
 pub async fn db() -> Result<Db, Box<dyn std::error::Error>> {
     let db = Connection::open("my_db3").await?;
     db.call(|conn| {
@@ -108,7 +109,8 @@ pub async fn list_people(Extension(db): Extension<Db>) -> Json<Vec<Save>> {
                 .query_map([], |row| {
                     Ok(Save { id: row.get(0)?, name: row.get(1)?, post: row.get(2)?, yob: row.get(3)?,})
              })?
-             .collect::<Result<Vec<_>, _>>()?;
+            // collects the ok values into the vec and also leabs the room to propogate for errors
+            .collect::<Result<Vec<_>, _>>()?;
                     
             Ok(rows)
         })
@@ -118,6 +120,9 @@ pub async fn list_people(Extension(db): Extension<Db>) -> Json<Vec<Save>> {
     Json(people)
    }
 
+// db.call (|conn| {
+// bleah
+// })
 
 pub async fn list_people2(Extension(db): Extension<Db>) -> String {
     let people = db
@@ -167,4 +172,15 @@ pub async fn find(Path(param): Path<String>,Extension(db): Extension<Db>) {
     println!(" for your search\n {:?}\n", find_thing);
 
 
+}
+
+pub async fn find_name(Path(param): Path<String>, Extension(db): Extension<Db>) {
+
+    let result = list_people(Extension(db)).await;
+    let search = param.clone();
+    println!(" searching for {}", search);
+    let fine_thing: Vec<_> = result.iter().filter(|wtf| wtf.post.contains(&search))
+        .collect();
+
+    println!(" For your search\n {:?}", fine_thing);
 }

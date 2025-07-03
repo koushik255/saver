@@ -3,7 +3,7 @@ use axum::{ routing::get, Extension, Router};
 
 mod blud;
 
-use blud::{default,db,list_people2,find,list_people};
+use blud::{db, default, find, find_name, list_people, list_people2};
 
 #[tokio::main]
 async fn main() ->Result<(), Box<dyn std::error::Error>>{
@@ -15,6 +15,7 @@ async fn main() ->Result<(), Box<dyn std::error::Error>>{
     .route("/list",get(list_people2))
     .route("/blud", get(list_people))
     .route("/find/{*capture}", get(find))
+    .route("/search{*capture}", get(find_name))
     .layer(Extension(db));
 
     let addr = "0.0.0.0:8080";
