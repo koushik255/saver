@@ -1,10 +1,9 @@
-use axum::{debug_handler, extract::Path,Json, Extension};
+use axum::{debug_handler, extract::Path,Json, Extension,};
 use std::sync::Arc;
 use tokio_rusqlite::Connection;
 use serde::Serialize;
 
-#[derive(Debug,Serialize)]
-
+#[derive(Debug,Serialize,Clone)]
 pub struct Save {
     pub id: i64,
     pub name: String,
@@ -160,27 +159,33 @@ pub async fn list_people2(Extension(db): Extension<Db>) -> String {
 
 
 
-pub async fn find(Path(param): Path<String>,Extension(db): Extension<Db>) {
+pub async fn find(Path(param): Path<String>,Extension(db): Extension<Db>)  -> Json<Vec<Save>>{
     let result = list_people(Extension(db)).await;
     // println!("Result: {:?}", result);
     let search = param.clone();
     let find_thing: Vec<_> = 
-    result.iter()
+    <Vec<Save> as Clone>::clone(&result)
+    .into_iter()
     .filter(|wtf|wtf.name.contains(&search))
     .collect();
 
     println!(" for your search\n {:?}\n", find_thing);
 
-
+    Json(find_thing) 
 }
 
-pub async fn find_name(Path(param): Path<String>, Extension(db): Extension<Db>) {
+pub async fn find_name(Path(param): Path<String>, Extension(db): Extension<Db>) -> Json<Vec<Save>>  {
 
     let result = list_people(Extension(db)).await;
     let search = param.clone();
     println!(" searching for {}", search);
-    let fine_thing: Vec<_> = result.iter().filter(|wtf| wtf.post.contains(&search))
+    let fine_thing: Vec<Save> = 
+        <Vec<Save> as Clone>::clone(&result)
+        .into_iter()
+        .filter(|wtf| wtf.post.contains(&search))
         .collect();
 
     println!(" For your search\n {:?}", fine_thing);
+
+    Json(fine_thing)
 }
