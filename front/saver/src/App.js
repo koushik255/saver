@@ -6,15 +6,15 @@ const API_BASE_URL = "http://localhost:8080";
 
 function App() {
   const [people, setPeople] = useState([]);
-  const [peopleText, setPeopleText] = useState(""); // For list_people2 string response
+  const [peopleText, setPeopleText] = useState("");
   const [newPerson, setNewPerson] = useState({ name: "", post: "" });
   const [searchTerm, setSearchTerm] = useState("");
   const [searchType, setSearchType] = useState("name");
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [viewMode, setViewMode] = useState("json"); // "json" or "text"
+  const [viewMode, setViewMode] = useState("json");
 
-  // Fetch all people as JSON (using /blud endpoint)
+  // Fetch all people as JSON (/blud)
   const fetchPeopleJSON = async () => {
     try {
       setLoading(true);
@@ -27,7 +27,7 @@ function App() {
     }
   };
 
-  // Fetch all people as text (using /list endpoint)
+  // Fetch all people as text (/list)
   const fetchPeopleText = async () => {
     try {
       setLoading(true);
@@ -51,7 +51,7 @@ function App() {
         `${API_BASE_URL}/add/${newPerson.name}|${newPerson.post}`
       );
       setNewPerson({ name: "", post: "" });
-      // Refresh both views
+      // Refresh current view
       if (viewMode === "json") {
         fetchPeopleJSON();
       } else {
@@ -93,7 +93,6 @@ function App() {
     }
   };
 
-  // Load people on component mount
   useEffect(() => {
     fetchPeopleJSON(); // Default to JSON view
   }, []);
@@ -109,67 +108,61 @@ function App() {
         <section className="add-person">
           <h2>Add New Person</h2>
           <form onSubmit={addPerson}>
-            <div className="form-group">
-              <input
-                type="text"
-                placeholder="Name"
-                value={newPerson.name}
-                onChange={(e) =>
-                  setNewPerson({ ...newPerson, name: e.target.value })
-                }
-                required
-              />
-              <input
-                type="text"
-                placeholder="Post"
-                value={newPerson.post}
-                onChange={(e) =>
-                  setNewPerson({ ...newPerson, post: e.target.value })
-                }
-                required
-              />
-              <button type="submit" disabled={loading}>
-                {loading ? "Adding..." : "Add Person"}
-              </button>
-            </div>
+            <input
+              type="text"
+              placeholder="Name"
+              value={newPerson.name}
+              onChange={(e) =>
+                setNewPerson({ ...newPerson, name: e.target.value })
+              }
+              required
+            />
+            <input
+              type="text"
+              placeholder="Post"
+              value={newPerson.post}
+              onChange={(e) =>
+                setNewPerson({ ...newPerson, post: e.target.value })
+              }
+              required
+            />
+            <button type="submit" disabled={loading}>
+              {loading ? "Adding..." : "Add Person"}
+            </button>
           </form>
         </section>
 
         {/* Search Section */}
         <section className="search">
           <h2>Search People</h2>
-          <div className="search-controls">
-            <input
-              type="text"
-              placeholder="Search term"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <select
-              value={searchType}
-              onChange={(e) => setSearchType(e.target.value)}
-            >
-              <option value="name">Search by Name</option>
-              <option value="post">Search by Post</option>
-            </select>
-            <button onClick={searchPeople} disabled={loading}>
-              {loading ? "Searching..." : "Search"}
-            </button>
-          </div>
+          <input
+            type="text"
+            placeholder="Search term"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <select
+            value={searchType}
+            onChange={(e) => setSearchType(e.target.value)}
+          >
+            <option value="name">Search by Name (/find)</option>
+            <option value="post">Search by Post (/search)</option>
+          </select>
+          <button onClick={searchPeople} disabled={loading}>
+            Search
+          </button>
 
           {searchResults.length > 0 && (
             <div className="search-results">
               <h3>Search Results:</h3>
-              <div className="people-grid">
-                {searchResults.map((person) => (
-                  <div key={person.id} className="person-card">
-                    <h4>{person.name}</h4>
-                    <p>Post: {person.post}</p>
-                    <p>Year of Birth: {person.yob}</p>
-                    <p>ID: {person.id}</p>
-                  </div>
-                ))}
-              </div>
+              {searchResults.map((person, index) => (
+                <div key={index} className="person-card">
+                  <h4>{person.name}</h4>
+                  <p>Post: {person.post}</p>
+                  <p>Year of Birth: {person.yob}</p>
+                  <p>ID: {person.id}</p>
+                </div>
+              ))}
             </div>
           )}
         </section>
@@ -197,17 +190,16 @@ function App() {
           <button
             onClick={viewMode === "json" ? fetchPeopleJSON : fetchPeopleText}
             disabled={loading}
-            className="refresh-btn"
           >
-            {loading ? "Loading..." : "Refresh List"}
+            {loading ? "Loading..." : "Refresh"}
           </button>
 
           {loading ? (
             <p>Loading...</p>
           ) : viewMode === "json" ? (
             <div className="people-grid">
-              {people.map((person) => (
-                <div key={person.id} className="person-card">
+              {people.map((person, index) => (
+                <div key={index} className="person-card">
                   <h4>{person.name}</h4>
                   <p>Post: {person.post}</p>
                   <p>Year of Birth: {person.yob}</p>
@@ -226,4 +218,4 @@ function App() {
   );
 }
 
-export default App;
+export default App; 

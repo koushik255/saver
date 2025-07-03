@@ -184,7 +184,7 @@ pub async fn find_name(Path(param): Path<String>, Extension(db): Extension<Db>) 
         .into_iter()
         .filter(|wtf| wtf.post.contains(&search))
         .collect();
-
+    
     println!(" For your search\n {:?}", fine_thing);
 
     Json(fine_thing)

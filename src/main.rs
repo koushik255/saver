@@ -2,7 +2,7 @@ use axum::{ routing::get, Extension, Router};
 use tower_http::cors::{CorsLayer,Any};
 
 
-mod blud;
+mod blud;   
 
 use blud::{db, default, find, find_name, list_people, list_people2};
 
@@ -13,7 +13,7 @@ async fn main() ->Result<(), Box<dyn std::error::Error>>{
     
 
     let cors = CorsLayer::new()
-    .allow_origin(Any)
+    .allow_origin(Any) 
     .allow_methods(Any)
     .allow_headers(Any);
 
