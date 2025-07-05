@@ -116,3 +116,14 @@
 .inline-link:visited {
   color: #6f42c1;
 }
+/* Other existing CSS rules */
+
+.person-card a {
+  color: #007bff; /* A common blue color for links */
+  text-decoration: underline; /* Keep underline for better usability */
+}
+
+/* Optional: change color on hover */
+.person-card a:hover {
+  color: #0056b3; /* A darker blue on hover */
+}

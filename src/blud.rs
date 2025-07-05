@@ -189,3 +189,7 @@ pub async fn find_name(Path(param): Path<String>, Extension(db): Extension<Db>) 
 
     Json(fine_thing)
 }
+
+
+//first i need it so that it takes the links as like links
+// i need a functinon which can like 

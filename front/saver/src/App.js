@@ -4,6 +4,31 @@ import "./App.css";
 
 const API_BASE_URL = "http://localhost:8080";
 
+// Helper function to check if a string is a valid URL
+const isValidUrl = (string) => {
+  try {
+    new URL(string);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+// Generic component to render text content, turning it into a link if it's a URL
+const LinkableText = ({ label, text }) => {
+  if (isValidUrl(text)) {
+    return (
+      <p>
+        {label}:{" "}
+        <a href={text} target="_blank" rel="noopener noreferrer">
+          {text}
+        </a>
+      </p>
+    );
+  }
+  return <p>{label}: {text}</p>;
+};
+
 function App() {
   const [people, setPeople] = useState([]);
   const [peopleText, setPeopleText] = useState("");
@@ -157,8 +182,10 @@ function App() {
               <h3>Search Results:</h3>
               {searchResults.map((person, index) => (
                 <div key={index} className="person-card">
-                  <h4>{person.name}</h4>
-                  <p>Post: {person.post}</p>
+                  {/* Use LinkableText for name */}
+                  <LinkableText label="Name" text={person.name} />
+                  {/* Use LinkableText for post */}
+                  <LinkableText label="Post" text={person.post} />
                   <p>Year of Birth: {person.yob}</p>
                   <p>ID: {person.id}</p>
                 </div>
@@ -200,8 +227,10 @@ function App() {
             <div className="people-grid">
               {people.map((person, index) => (
                 <div key={index} className="person-card">
-                  <h4>{person.name}</h4>
-                  <p>Post: {person.post}</p>
+                  {/* Use LinkableText for name */}
+                  <LinkableText label="Name" text={person.name} />
+                  {/* Use LinkableText for post */}
+                  <LinkableText label="Post" text={person.post} />
                   <p>Year of Birth: {person.yob}</p>
                   <p>ID: {person.id}</p>
                 </div>
@@ -218,4 +247,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;
